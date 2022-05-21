@@ -1,0 +1,12 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<form action = "" method = "POST">
+    {% csrf_token %}
+    <p>Are you sure you want to delete "{{object}}"</p>
+    <input type = "button" value="Previous Page" onclick="javascript:history.go(-1);">
+    <input type = "submit" value = "confirm">
+</form>
+
+{% endblock content %}
