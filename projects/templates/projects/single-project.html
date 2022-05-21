@@ -1,7 +1,7 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<p>single project</p>
+    <img style = "max-width: 500px;" src="{{ project.featured_image.url }}">
     {{project.title}}
     <hr>
     {% for tag in tags %}

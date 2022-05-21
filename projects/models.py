@@ -1,3 +1,6 @@
+from re import T
+from tkinter.tix import Tree
+from tokenize import blank_re
 from django.db import models
 import uuid
 
@@ -7,6 +10,7 @@ import uuid
 class Project(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
+    featured_image = models.ImageField(null=True,blank=True,default="default.jpg")
     demo_link = models.CharField(max_length=2000, null=True, blank=True)
     source_link = models.CharField(max_length=2000, null=True, blank=True)
     tags = models.ManyToManyField('Tag',blank=True)
