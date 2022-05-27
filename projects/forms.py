@@ -1,5 +1,4 @@
 from dataclasses import field
-from tkinter import Widget
 from django import forms
 from django.forms import ModelForm, widgets
 from .models import Project
@@ -17,3 +16,4 @@ class ProjectForm(ModelForm):
         for name,field in self.fields.items():
             field.widget.attrs.update({'class':'input'})
         # self.fields['title'].widget.attrs.update({'class':'input'})
+        
