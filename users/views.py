@@ -1,11 +1,13 @@
+from gettext import install
 from pydoc import describe
+from tkinter import EW
 from urllib import request
 from django.shortcuts import redirect, render
-from .models import Profile
+from .models import Profile, Skill
 from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, ProfileForm, SkillForm
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -22,7 +24,7 @@ def RegisterUser(request):
             messages.success(request,"User Account was created!")
 
             login(request,user)
-            return redirect('profiles')
+            return redirect('edit-account')
         else:
             messages.error(request,"Error ha occured!")
     
@@ -77,3 +79,43 @@ def userAccount(request):
     otherskills = profile.skill_set.filter(description="")
     context = {"profile":profile,"skills":skills}
     return render(request,'users/account.html',context)
+
+
+@login_required(login_url='login')
+def editAccount(request):
+    profile = request.user.profile
+    form = ProfileForm(instance=profile)
+    if request.method=="POST":
+        form = ProfileForm(request.POST,request.FILES,instance=profile)
+        if form.is_valid:
+            form.save()
+            return redirect('account')
+    context = {'form':form,}
+    return render(request,'users/profile_form.html',context)
+
+@login_required(login_url='login')
+def createSkill(request):
+    profile = request.user.profile
+    form = SkillForm()
+    if request.method=="POST":
+        form = SkillForm(request.POST)
+        if form.is_valid:
+            skill = form.save(commit=False)
+            skill.owner = profile
+            skill.save()
+            return redirect('account')
+    context = {"form":form,}
+    return render(request,"users/skill_form.html",context)
+
+@login_required(login_url='login')
+def updateSkill(request,pk):
+    profile = request.user.profile
+    skill = profile.skill_set.get(id=pk)
+    form = SkillForm(instance=profile)
+    if request.method=="POST":
+        form = SkillForm(request.POST,instance=skill)
+        if form.is_valid:
+            form.save()
+            return redirect('account')
+    context = {"form":form,}
+    return render(request,"users/skill_form.html",context)

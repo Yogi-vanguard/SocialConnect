@@ -8,4 +8,7 @@ urlpatterns=[
     path('logout/',views.LogoutUser,name='logout'),
     path('register/',views.RegisterUser,name='register'),
     path('account/',views.userAccount,name='account'),
+    path('edit-account/',views.editAccount,name='edit-account'),
+    path('create-skill/',views.createSkill,name='create-skill'),
+    path('update-skill/<str:pk>/',views.updateSkill,name='update-skill'),
 ]
