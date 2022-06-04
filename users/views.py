@@ -7,8 +7,10 @@ from .models import Profile, Skill
 from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.db.models import Q
 from .forms import CustomUserCreationForm, ProfileForm, SkillForm
 from django.contrib.auth.decorators import login_required
+from .utils import searchHelper, paginatorHelper
 
 # Create your views here.
 
@@ -63,8 +65,9 @@ def LogoutUser(request):
     return redirect('login')
 
 def profiles(request):
-    profiles = Profile.objects.all()
-    context = {"profiles":profiles,}
+    profiles,search_query = searchHelper(request)
+    profiles,paginator,custom_range = paginatorHelper(request,profiles,result=3)
+    context = {"profiles":profiles,"search_query":search_query,"paginator":paginator,"custom_range":custom_range,}
     return render(request,"users/profiles.html",context)
 
 def userprofile(request,pk):
@@ -103,6 +106,7 @@ def createSkill(request):
             skill = form.save(commit=False)
             skill.owner = profile
             skill.save()
+            messages.success(request,"Skill Added Successfully!")
             return redirect('account')
     context = {"form":form,}
     return render(request,"users/skill_form.html",context)
@@ -116,6 +120,20 @@ def updateSkill(request,pk):
         form = SkillForm(request.POST,instance=skill)
         if form.is_valid:
             form.save()
+            messages.success(request,"Profile successfully updated!")
             return redirect('account')
     context = {"form":form,}
     return render(request,"users/skill_form.html",context)
+
+
+@login_required(login_url='login')
+def deleteSkill(request,pk):
+    profile = request.user.profile
+    skill = profile.skill_set.get(id=pk)
+    if request.method=="POST":
+            skill.delete()
+            messages.success(request,"Profile successfully deleted!")
+            return redirect('account')
+    context = {"object":skill,}
+    return render(request,"delete_template.html",context)
+

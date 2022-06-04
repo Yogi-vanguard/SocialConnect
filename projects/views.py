@@ -1,16 +1,27 @@
+from asyncore import read
 import profile
+import re
 from turtle import title
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from projects.utils import searchHelper
 from projects.variables.constant import Constants
 from .models import Project,Review,Tag
 from .forms import ProjectForm
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from .utils import searchHelper,paginatorHelper
+from django.core.paginator import Paginator, PageNotAnInteger,EmptyPage
+
+
 
 # Create your views here.
 def projects(request):
-    items = Project.objects.all()
-    context = {"projects":items}
+    projects,search_query = searchHelper(request)
+    
+    projects,paginator,custom_range = paginatorHelper(request,projects,result=3)
+    context = {"projects":projects,"search_query":search_query,"paginator":paginator,"custom_range":custom_range}
     return render(request, 'projects/projects.html',context)
 
 
@@ -30,7 +41,8 @@ def createProject(request):
             project = form.save(commit=False)
             project.owner = profile
             project.save()
-            return redirect('projects')
+            messages.success(request,"Project Added Successfully!")
+            return redirect('account')
     context = {'form':form}
     return render(request,'projects/project_form.html',context)
 
@@ -44,7 +56,8 @@ def updateProject(request,pk):
         form = ProjectForm(request.POST,request.FILES, instance=project)
         if form.is_valid():
             form.save()
-            return redirect('projects')
+            messages.success(request,"Project Updated Successfully!")
+            return redirect('account')
     context = {'form':form}
     return render(request,'projects/project_form.html',context)
 
@@ -54,6 +67,7 @@ def deleteProject(request,pk):
     project = profile.project_set.get(id=pk)
     if request.method=="POST":
         project.delete()
+        messages.success(request,"Project Deleted Successfully!")
         return redirect('projects')
     context = {'object':project}
-    return render(request,'projects/delete_template.html',context)    
+    return render(request,'delete_template.html',context)    
