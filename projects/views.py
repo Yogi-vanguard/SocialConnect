@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from projects.utils import searchHelper
 from projects.variables.constant import Constants
 from .models import Project,Review,Tag
-from .forms import ProjectForm
+from .forms import ProjectForm, ReviewForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -28,7 +28,17 @@ def projects(request):
 def project(request, pk):
     item = Project.objects.get(id=pk)
     tag = item.tags.all()
-    context = {"project":item,"tags":tag}
+    form = ReviewForm()
+    if request.method=='POST':
+        form = ReviewForm(request.POST)
+        review = form.save(commit=False)
+        review.project = item
+        review.owner = request.user.profile
+        review.save()
+        item.getvoteCount
+        messages.success(request,"Successfully submitted!")
+        return redirect('project',pk=item.id)
+    context = {"project":item,"tags":tag,"form":form}
     return render(request, 'projects/single-project.html',context)
 
 @login_required(login_url='login')
@@ -70,4 +80,6 @@ def deleteProject(request,pk):
         messages.success(request,"Project Deleted Successfully!")
         return redirect('projects')
     context = {'object':project}
-    return render(request,'delete_template.html',context)    
+    return render(request,'delete_template.html',context) 
+
+
